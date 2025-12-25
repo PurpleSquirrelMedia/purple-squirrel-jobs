@@ -1,21 +1,21 @@
-import NextAuth from "next-auth";
-import Credentials from "next-auth/providers/credentials";
-import Google from "next-auth/providers/google";
-import GitHub from "next-auth/providers/github";
+import type { NextAuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
+import GitHubProvider from "next-auth/providers/github";
 import bcrypt from "bcryptjs";
 import db from "./db";
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const authOptions: NextAuthOptions = {
   providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID ?? "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
     }),
-    GitHub({
-      clientId: process.env.GITHUB_CLIENT_ID,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    GitHubProvider({
+      clientId: process.env.GITHUB_CLIENT_ID ?? "",
+      clientSecret: process.env.GITHUB_CLIENT_SECRET ?? "",
     }),
-    Credentials({
+    CredentialsProvider({
       name: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
@@ -60,7 +60,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user && token.id) {
-        session.user.id = token.id as string;
+        (session.user as { id?: string }).id = token.id as string;
       }
       return session;
     },
@@ -68,4 +68,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   session: {
     strategy: "jwt",
   },
-});
+};
